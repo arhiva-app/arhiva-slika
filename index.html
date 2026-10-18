@@ -214,6 +214,10 @@ html[data-theme="ponoc"]{
 <div id="content"><p class="missing">Učitavanje...</p></div>
 
 <script>
+/* ================= SKLADIŠTE — samo čitanje (Arhiva v159) =================
+   JEDINO mesto na ovoj stranici koje zna kako se podaci čuvaju; ostatak zove samo SkladisteCitanje.stavka(id).
+   Kasnije (Google Drive) dolazi druga verzija ovog dela sa istom funkcijom. Prati modul Skladiste u Arhivi (Galerija-). */
+const SkladisteCitanje = (()=>{
 /* Čita stavku prvo iz nove baze (arhivaDB), pa iz stare (galerijaDB, verzija 1 — ne menja se).
    Nova baza se NIKAD ne pravi odavde: ako ne postoji, otvaranje se prekida (verziju i skladišta
    određuje samo Arhiva). Vraća {id, name, type, ext, deletedAt, blob, mime} ili null. */
@@ -289,6 +293,9 @@ async function idbGetItem(id){
   if(n !== undefined) return n;
   return await itemFromOldDb(id);
 }
+return {stavka: idbGetItem};
+})();
+/* ================= kraj SKLADIŠTA ================= */
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -305,7 +312,7 @@ const id = params.get('p');
 const content = document.getElementById('content');
 
 (async ()=>{
-  const item = id ? await idbGetItem(id) : null;
+  const item = id ? await SkladisteCitanje.stavka(id) : null;
 
   if(!item){
     content.innerHTML =
